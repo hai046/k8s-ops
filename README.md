@@ -1,4 +1,4 @@
-# 1、机构说明
+# 1、k8s部署架构说明
 
 - 使用功能springcloud作为基础框架
 - [apollo作为配置中心](apollo/readme.md)
