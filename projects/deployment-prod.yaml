@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: ${PROJECT_NAME}
+  name: ${PROJECT_NAME}
+spec:
+  replicas: 1
+  serviceName: ${PROJECT_NAME}
+  selector:
+    matchLabels:
+      app: ${PROJECT_NAME} 
+  template:
+    metadata:
+      labels:
+        app: ${PROJECT_NAME}   
+    spec:
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      containers:
+      - env:
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: JAVA_OPTS
+          value : -Xms1024M -Xmx1024M -Dlogging.file.path=/data/logs/${PROJECT_ALIAS}/$(HOSTNAME)
+        name: ${PROJECT_NAME}
+        image: cheesetest.tencentcloudcr.com/prod/${PROJECT_NAME}:${IMAGE_TAG}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: ${SERVICE_PORT}
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 1
+            memory: 1024Mi
+          requests:
+            cpu: 500m
+            memory: 1000m
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: localtime
+          readOnly: true
+        - mountPath: "/data/logs/${PROJECT_ALIAS}"
+          name: cheese-log-${PROJECT_NAME}
+        - mountPath: "/data/logs/csp"
+          name: csp-log
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        livenessProbe:
+          httpGet:
+            path: /actuator/info
+            port: ${SERVICE_PORT}
+            scheme: HTTP
+          initialDelaySeconds: 120
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 18
+          timeoutSeconds: 5
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /actuator/info
+            port: ${SERVICE_PORT}
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 18
+          timeoutSeconds: 10    
+      imagePullSecrets:
+      - name: 100015858417-tcr-mvxfrvzn-dockercfg
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 10
+      volumes:
+      - hostPath:
+          path: /etc/localtime
+          type: File
+        name: localtime
+      - name: cheese-log-${PROJECT_NAME}
+        hostPath:
+           path: /data/logs/${PROJECT_ALIAS}
+      - name: csp-log
+        hostPath:
+           path: /data/logs/csp
+    
+    
+
+
