@@ -13,7 +13,8 @@
 - [grpc作为RPC](grpc.md)
 - xxl-job作为分布式任务框架
 - spring gateway+sentinel作为网关和限流
-- [微服务项目部署模板](projects/deployment-prod.yaml)
+- [微服务项目部署模板](projects/readme.md)
+- 使用对象服务作为日志备份
 - 其他常用模块
 
 # 2、标准架构设计
